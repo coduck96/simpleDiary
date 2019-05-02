@@ -1,0 +1,123 @@
+package com.cookandroid.chrono_yooyeon;
+
+import android.content.Context;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.ViewFlipper;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+public class MainActivity extends AppCompatActivity {
+
+    DatePicker dPicker;
+    TextView tvYear, tvMonth, tvDay;
+    Button btnSave;
+    EditText etDiary;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        tvDay = (TextView) findViewById(R.id.tvDay);
+        tvYear = (TextView) findViewById(R.id.tvYear);
+        tvMonth = (TextView) findViewById(R.id.tvMonth);
+        btnSave = (Button) findViewById(R.id.btnSave);
+        etDiary = (EditText) findViewById(R.id.edDiary);
+
+        dPicker = (DatePicker) findViewById(R.id.dateP);
+        int y = dPicker.getYear();
+        int m = dPicker.getMonth();
+        int d = dPicker.getDayOfMonth();
+
+        int dmonth=m+1;
+        String fileName=y+"_"+dmonth+"_"+d+".txt";
+        String msg=readDiary(fileName);
+        etDiary.setText(msg);
+
+
+        dPicker.init(y, m, d, new DatePicker.OnDateChangedListener() {
+            @Override
+            public void onDateChanged(DatePicker datePicker, int y, int m, int d) {
+                int dmonth=m+1;
+                String fileName=y+"_"+dmonth+"_"+d+".txt";
+                String msg=readDiary(fileName);
+                etDiary.setText(msg);
+            }
+        });
+
+
+        tvDay = (TextView) findViewById(R.id.tvDay);
+        tvYear = (TextView) findViewById(R.id.tvYear);
+        tvMonth = (TextView) findViewById(R.id.tvMonth);
+        btnSave = (Button) findViewById(R.id.btnSave);
+        etDiary = (EditText) findViewById(R.id.edDiary);
+
+        String year = Integer.toString(dPicker.getYear());
+        String month = Integer.toString(dPicker.getMonth() + 1); // 0~11월 형태로 전달
+        String day = Integer.toString(dPicker.getDayOfMonth());
+
+        //TextView에 설정
+        tvYear.setText(year);
+        tvMonth.setText(month);
+        tvDay.setText(day);
+
+        btnSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                try {
+                    //DatePicker의 값을 읽어옴
+                    String year = Integer.toString(dPicker.getYear());
+                    String month = Integer.toString(dPicker.getMonth() + 1); // 0~11월 형태로 전달
+                    String day = Integer.toString(dPicker.getDayOfMonth());
+
+                    //TextView에 설정
+                    tvYear.setText(year);
+                    tvMonth.setText(month);
+                    tvDay.setText(day);
+                    //file 만들기
+                    String fileName = year + "_" + month + "_" + day + ".txt";
+                    FileOutputStream outputStream = openFileOutput(fileName, Context.MODE_PRIVATE);
+                    String msg = etDiary.getText().toString();
+
+
+                    outputStream.write(msg.getBytes()); //저장의 형태를 바꿔준다!
+                    outputStream.close();
+
+
+                } catch (IOException e) {
+
+                }
+
+            }
+        });
+
+
+    }
+
+    String readDiary(String fName) {
+        String diaryStr = null;
+        FileInputStream inFs;
+        try {
+            inFs = openFileInput(fName);
+            byte[] txt = new byte[500];
+            inFs.read(txt);
+            inFs.close();
+            diaryStr = (new String(txt)).trim();
+            btnSave.setText("수정 하기");
+        } catch (IOException e) {
+            etDiary.setHint("일기 없음");
+            btnSave.setText("새로 저장");
+        }
+        return diaryStr;
+    }
+
+}
